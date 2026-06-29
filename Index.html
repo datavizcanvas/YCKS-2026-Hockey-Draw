@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>York Cup & Kim Small Shield 2026 — Match Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pitch:#0C3B2A; --pitch2:#155b40;
+  --amber:#FFB22E; --amber-deep:#E8950E;
+  --ink:#13241D; --mute:#5d6f66;
+  --bg:#e9efe9; --card:#ffffff; --line:#dbe3dc; --line2:#eef2ee;
+  --f1:#1f7a52; --f2:#2f6fb0; --f3:#c07a2b;
+  --shadow:0 1px 2px rgba(12,59,42,.06),0 8px 24px rgba(12,59,42,.07);
+  --disp:'Oswald','Arial Narrow',system-ui,sans-serif;
+  --body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{ -webkit-text-size-adjust:100%; }
+body{
+  margin:0; background:var(--bg); color:var(--ink); font-family:var(--body);
+  line-height:1.45; font-size:15px;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{ max-width:780px; margin:0 auto; padding:0 14px 64px; }
+.numbers{ font-variant-numeric:tabular-nums; }
+
+/* ---------- header ---------- */
+header.hero{
+  background:linear-gradient(135deg,var(--pitch) 0%,var(--pitch2) 100%);
+  color:#fff; position:relative; overflow:hidden;
+  border-radius:0 0 22px 22px;
+}
+header.hero .wrap{ padding-top:22px; padding-bottom:22px; position:relative; z-index:1;}
+/* shooting-circle "D" line motif */
+header.hero::after{
+  content:""; position:absolute; right:-90px; top:-70px; width:320px; height:320px;
+  border:2px solid rgba(255,255,255,.13); border-radius:50%;
+}
+header.hero::before{
+  content:""; position:absolute; right:-150px; top:-30px; width:320px; height:320px;
+  border:2px solid rgba(255,255,255,.10); border-radius:50%;
+}
+.eyebrow{ font-family:var(--disp); text-transform:uppercase; letter-spacing:.22em;
+  font-size:11px; font-weight:600; color:var(--amber); margin:0 0 6px; }
+h1{ font-family:var(--disp); font-weight:700; font-size:30px; line-height:1.02;
+  margin:0; letter-spacing:.005em; text-transform:uppercase; }
+.subtitle{ margin:8px 0 0; font-size:13px; color:rgba(255,255,255,.78); }
+
+/* ---------- search ---------- */
+.search{ position:relative; margin-top:16px; }
+.search input{
+  width:100%; border:0; border-radius:12px; padding:13px 14px 13px 42px;
+  font-family:var(--body); font-size:15px; color:var(--ink); background:#fff;
+  box-shadow:var(--shadow);
+}
+.search input:focus{ outline:3px solid var(--amber); outline-offset:0; }
+.search .mag{ position:absolute; left:14px; top:50%; transform:translateY(-50%);
+  color:var(--mute); font-size:16px; pointer-events:none; }
+.results{
+  position:absolute; left:0; right:0; top:calc(100% + 6px); background:#fff;
+  border-radius:12px; box-shadow:var(--shadow); z-index:30; overflow:hidden;
+  max-height:320px; overflow-y:auto; display:none;
+}
+.results.open{ display:block; }
+.results button{
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  width:100%; text-align:left; border:0; background:none; padding:11px 14px;
+  font-family:var(--body); font-size:14px; cursor:pointer; color:var(--ink);
+  border-bottom:1px solid var(--line2);
+}
+.results button:last-child{ border-bottom:0; }
+.results button:hover,.results button.active{ background:#fff6e6; }
+.results .rt{ font-weight:600; }
+.results .rp{ font-family:var(--disp); font-size:11px; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--mute); white-space:nowrap; }
+.results .empty{ padding:14px; color:var(--mute); font-size:14px; }
+
+/* ---------- filter bar ---------- */
+.filters{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  padding:12px 0 10px; margin-top:2px;
+}
+.filters .row{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+.field-label{ font-family:var(--disp); text-transform:uppercase; letter-spacing:.12em;
+  font-size:10px; font-weight:600; color:var(--mute); margin:0 0 4px 2px; }
+.sel{ position:relative; }
+.sel select{
+  -webkit-appearance:none; appearance:none; width:100%; cursor:pointer;
+  border:1px solid var(--line); border-radius:10px; background:#fff;
+  padding:10px 30px 10px 11px; font-family:var(--body); font-size:14px; color:var(--ink);
+  font-weight:500;
+}
+.sel select:focus{ outline:2px solid var(--amber); }
+.sel::after{ content:"▾"; position:absolute; right:11px; top:50%; transform:translateY(-50%);
+  color:var(--mute); pointer-events:none; font-size:11px; }
+.reset{ margin-top:8px; display:flex; justify-content:flex-end; }
+.reset button{ border:0; background:none; color:var(--pitch2); font-family:var(--disp);
+  text-transform:uppercase; letter-spacing:.1em; font-size:11px; font-weight:600;
+  cursor:pointer; padding:4px 2px; }
+.reset button:hover{ color:var(--amber-deep); }
+
+/* ---------- scope summary ---------- */
+.scope{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:2px 0 14px; }
+.scope .lead{ font-size:13px; color:var(--mute); }
+.chip{ display:inline-flex; align-items:center; gap:5px; font-size:12.5px; font-weight:600;
+  padding:4px 10px; border-radius:999px; background:#fff; border:1px solid var(--line); }
+.chip.team{ background:var(--amber); border-color:var(--amber-deep); color:#3a2600; }
+
+/* ---------- KPI ---------- */
+.kpis{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.kpi{ background:var(--card); border-radius:14px; padding:14px 16px; box-shadow:var(--shadow);
+  border-top:3px solid var(--pitch2); }
+.kpi:nth-child(2){ border-top-color:var(--amber); }
+.kpi .label{ font-family:var(--disp); text-transform:uppercase; letter-spacing:.12em;
+  font-size:11px; font-weight:600; color:var(--mute); }
+.kpi .num{ font-family:var(--disp); font-weight:700; font-size:40px; line-height:1.05;
+  color:var(--pitch); margin-top:2px; }
+.kpi .hint{ font-size:11.5px; color:var(--mute); margin-top:2px; }
+
+/* ---------- cards / sections ---------- */
+.card{ background:var(--card); border-radius:16px; box-shadow:var(--shadow); margin-bottom:14px;
+  overflow:hidden; }
+.card > .head{ padding:13px 16px; display:flex; align-items:baseline; justify-content:space-between;
+  gap:8px; border-bottom:1px solid var(--line2); }
+.card > .head h2{ font-family:var(--disp); text-transform:uppercase; letter-spacing:.06em;
+  font-size:15px; font-weight:600; margin:0; }
+.card > .head .meta{ font-size:12px; color:var(--mute); font-weight:500; }
+.card .body{ padding:6px 16px 14px; }
+
+/* team list */
+.teamlist{ list-style:none; margin:0; padding:6px 16px 14px; }
+.teamlist .grp{ font-family:var(--disp); text-transform:uppercase; letter-spacing:.1em;
+  font-size:11px; color:var(--mute); margin:10px 0 6px; }
+.teamlist li{ display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--line2); }
+.teamlist li:last-child{ border-bottom:0; }
+.teamlist .n{ font-family:var(--disp); font-weight:600; font-size:13px; color:#fff;
+  background:var(--pitch2); width:24px; height:24px; border-radius:7px; display:grid;
+  place-items:center; flex:0 0 auto; }
+.teamlist li.sel .n{ background:var(--amber-deep); }
+.teamlist li.sel .tn{ font-weight:700; }
+.teamlist .tn{ font-size:14px; }
+.teamlist li button.pick{ margin-left:auto; border:0; background:none; cursor:pointer;
+  color:var(--pitch2); font-family:var(--disp); font-size:11px; letter-spacing:.08em;
+  text-transform:uppercase; font-weight:600; }
+
+/* ---------- day fixtures (responsive table) ---------- */
+.day{ margin-bottom:14px; }
+.day .daybar{ display:flex; align-items:center; gap:10px; margin:18px 2px 8px; }
+.day .daybar h2{ font-family:var(--disp); text-transform:uppercase; letter-spacing:.05em;
+  font-size:18px; margin:0; color:var(--pitch); }
+.day .daybar .count{ font-family:var(--disp); font-size:12px; letter-spacing:.06em;
+  color:#fff; background:var(--pitch2); border-radius:999px; padding:2px 9px; }
+.day .empty{ background:var(--card); border-radius:14px; box-shadow:var(--shadow);
+  padding:14px 16px; color:var(--mute); font-size:13.5px; }
+table.fix{ width:100%; border-collapse:separate; border-spacing:0; background:var(--card);
+  border-radius:14px; box-shadow:var(--shadow); overflow:hidden; }
+.fix thead th{ font-family:var(--disp); text-transform:uppercase; letter-spacing:.08em;
+  font-size:11px; font-weight:600; color:var(--mute); text-align:left; padding:10px 12px;
+  border-bottom:1px solid var(--line); background:#f6f9f6; }
+.fix tbody td{ padding:11px 12px; border-bottom:1px solid var(--line2); font-size:14px; vertical-align:middle; }
+.fix tbody tr:last-child td{ border-bottom:0; }
+.fix tbody tr.me{ background:#fff8ea; }
+.fix tbody tr.me td{ box-shadow:inset 3px 0 0 var(--amber-deep); }
+.fix .t-time{ font-weight:600; white-space:nowrap; }
+.fix .t-team.hi{ font-weight:700; }
+.divbadge{ font-family:var(--disp); font-weight:600; font-size:11px; letter-spacing:.04em;
+  background:#eef3ef; color:var(--pitch); border-radius:6px; padding:2px 7px; white-space:nowrap; }
+.fieldtag{ display:inline-flex; align-items:center; gap:8px; white-space:nowrap; font-size:13px; }
+.fieldtag .dot{ width:9px; height:9px; border-radius:50%; flex:0 0 auto; }
+.f1 .dot{ background:var(--f1);} .f2 .dot{ background:var(--f2);} .f3 .dot{ background:var(--f3);}
+.posn{ color:var(--mute); font-style:italic; }
+
+/* finals */
+details.finals{ background:var(--card); border-radius:16px; box-shadow:var(--shadow); margin-bottom:14px; overflow:hidden; }
+details.finals > summary{ list-style:none; cursor:pointer; padding:13px 16px;
+  display:flex; align-items:center; justify-content:space-between; gap:8px; }
+details.finals > summary::-webkit-details-marker{ display:none; }
+details.finals > summary h2{ font-family:var(--disp); text-transform:uppercase; letter-spacing:.06em;
+  font-size:15px; font-weight:600; margin:0; }
+details.finals > summary .chev{ color:var(--mute); font-size:13px; transition:transform .2s; }
+details.finals[open] > summary .chev{ transform:rotate(180deg); }
+.finals .note{ padding:0 16px 8px; font-size:12.5px; color:var(--mute); }
+.finals .fday{ font-family:var(--disp); text-transform:uppercase; letter-spacing:.08em;
+  font-size:11px; color:var(--pitch2); margin:10px 16px 4px; font-weight:600; }
+
+/* ---------- round-robin matrix ---------- */
+.matrix-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; padding:4px 14px 16px; }
+table.matrix{ border-collapse:separate; border-spacing:0; font-size:11px; }
+.matrix th,.matrix td{ border:1px solid var(--line2); padding:5px 6px; text-align:center;
+  min-width:62px; background:#fff; }
+.matrix thead th{ font-family:var(--disp); font-weight:600; letter-spacing:.02em; color:var(--pitch);
+  position:sticky; top:0; background:#f6f9f6; vertical-align:bottom; line-height:1.12; }
+.matrix tbody th{ font-family:var(--disp); font-weight:600; text-align:left; color:var(--pitch);
+  position:sticky; left:0; background:#f6f9f6; min-width:96px; max-width:120px; z-index:1; }
+.matrix .corner{ position:sticky; left:0; top:0; z-index:2; background:#eef3ef; }
+.matrix td.diag{ background:repeating-linear-gradient(45deg,#eef2ee,#eef2ee 4px,#e3eae3 4px,#e3eae3 8px); }
+.matrix td .mt{ font-weight:600; display:block; }
+.matrix td .mf{ color:var(--mute); }
+.matrix td.empty{ color:#c2cdc4; }
+.matrix .meRow th,.matrix .meCol{ background:var(--amber); color:#3a2600; }
+.matrix td.meCell{ box-shadow:inset 0 0 0 2px var(--amber-deep); }
+.matrix-empty{ padding:6px 16px 16px; color:var(--mute); font-size:13.5px; }
+.matrix td.below{ background:#f4f7f4; }
+.matrix .mf .fdot{ display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:3px; vertical-align:middle; }
+.matrix .mf .fdot.f1{ background:var(--f1);} .matrix .mf .fdot.f2{ background:var(--f2);} .matrix .mf .fdot.f3{ background:var(--f3);}
+.matrix-foot{ padding:2px 16px 14px; margin:0; font-size:11.5px; color:var(--mute); }
+.fieldwrap{ display:inline-flex; flex-direction:column; gap:1px; }
+.fieldwrap .side{ font-size:11px; color:var(--mute); }
+/* opponent wheel */
+.wheelwrap{ padding:12px 14px 16px; }
+svg.wheel{ width:100%; height:auto; overflow:visible; display:block; }
+.wheel .spoke{ stroke:var(--line); stroke-width:2; }
+.wheel .wn{ font-family:var(--body); font-size:12px; font-weight:600; fill:var(--ink); }
+.wheel .wm{ font-family:var(--body); font-size:9.5px; fill:var(--mute); }
+.wheel .hub{ fill:var(--pitch); }
+.wheel .hubt{ font-family:var(--disp); font-size:14px; font-weight:600; fill:#fff; letter-spacing:.01em; }
+.wheel .hubs{ font-family:var(--disp); font-size:9px; fill:var(--amber); letter-spacing:.1em; }
+/* field legend */
+.legend{ display:flex; flex-wrap:wrap; gap:8px 16px; justify-content:center; margin:0 0 10px; }
+.legend span{ display:inline-flex; align-items:center; gap:6px; font-size:11.5px; color:var(--mute); }
+.legend i{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+.legend .f1{ background:var(--f1);} .legend .f2{ background:var(--f2);} .legend .f3{ background:var(--f3);}
+
+footer{ text-align:center; color:var(--mute); font-size:11.5px; padding:18px 8px 0; line-height:1.6; }
+footer a{ color:var(--pitch2); }
+
+@media (max-width:560px){
+  h1{ font-size:25px; }
+  .kpi .num{ font-size:34px; }
+  .filters .row{ grid-template-columns:1fr; gap:8px; }
+  /* table -> cards */
+  .fix{ background:transparent; box-shadow:none; }
+  .fix thead{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+  .fix tbody tr{ display:block; background:var(--card); border-radius:13px; box-shadow:var(--shadow);
+    margin-bottom:10px; padding:6px 4px; }
+  .fix tbody td{ display:flex; justify-content:space-between; align-items:center; gap:14px;
+    border-bottom:1px solid var(--line2); padding:9px 14px; }
+  .fix tbody tr td:last-child{ border-bottom:0; }
+  .fix tbody td::before{ content:attr(data-label); font-family:var(--disp); text-transform:uppercase;
+    letter-spacing:.08em; font-size:10px; color:var(--mute); font-weight:600; flex:0 0 auto; }
+  .fix tbody tr.me{ background:var(--card); }
+  .fix tbody tr.me td{ box-shadow:none; }
+  .fix tbody tr.me{ outline:2px solid var(--amber); }
+  .fix td.c-team, .fix td.c-opp, .fix td.c-field{ text-align:right; }
+  .fix td.c-field .fieldwrap{ align-items:flex-end; }
+}
+@media (prefers-reduced-motion:reduce){ *{ transition:none!important; } }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Field Hockey · Revision 1 · 25 Jun 2026</p>
+    <h1>York Cup &amp; Kim Small Shield 2026</h1>
+    <p class="subtitle">Find your team and see every game — day, time, field and opponent.</p>
+    <div class="search">
+      <span class="mag">⌕</span>
+      <input id="teamSearch" type="text" autocomplete="off" placeholder="Search your team (e.g. Central Coast Blue)">
+      <div class="results" id="searchResults"></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="filters">
+    <div class="row">
+      <div>
+        <p class="field-label">Competition</p>
+        <div class="sel"><select id="fComp"></select></div>
+      </div>
+      <div>
+        <p class="field-label">Pool</p>
+        <div class="sel"><select id="fPool"></select></div>
+      </div>
+      <div>
+        <p class="field-label">Team</p>
+        <div class="sel"><select id="fTeam"></select></div>
+      </div>
+    </div>
+    <div class="reset"><button id="resetBtn">Reset to all</button></div>
+  </div>
+
+  <div class="scope" id="scope"></div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="label">Matches</div><div class="num numbers" id="kMatches">0</div><div class="hint" id="kMatchesHint">scheduled games</div></div>
+    <div class="kpi"><div class="label">Teams</div><div class="num numbers" id="kTeams">0</div><div class="hint" id="kTeamsHint">in selection</div></div>
+  </div>
+
+  <div class="card" id="teamCard">
+    <div class="head"><h2>Teams in selection</h2><span class="meta" id="teamCardMeta"></span></div>
+    <ul class="teamlist" id="teamList"></ul>
+  </div>
+
+  <div id="days"></div>
+
+  <details class="finals" id="finalsWrap">
+    <summary><h2 id="finalsTitle">Finals path (placement games)</h2><span class="chev">▾</span></summary>
+    <p class="note">Finals are decided by pool standings, so they're listed by position (e.g. “1st YB1”, “Highest Placed 2nd”) rather than team name until results are in.</p>
+    <div id="finalsBody"></div>
+  </details>
+
+  <div class="card" id="matrixCard">
+    <div class="head"><h2 id="robinTitle">Round-robin grid</h2><span class="meta" id="matrixMeta"></span></div>
+    <div id="matrixBody"></div>
+  </div>
+
+  <footer>
+    <div class="legend"><span><i class="f1"></i>Field 1 · Eastern Side</span><span><i class="f2"></i>Field 2 · Centre Field</span><span><i class="f3"></i>Field 3 · Western Side</span></div>
+    Built from the official YCKS 2026 draw (Revision 1, 25/06/2026). Pool fixtures verified against the published pools.<br>
+    Finals labels are reproduced as printed. Times are start times; field watering breaks are not shown.
+  </footer>
+</div>
+
+<script>
+const DATA = {"rosters": {"YA1": ["NSB Sharks", "Newcastle 1", "HNE Blue", "NWSHA-B-1", "Tamworth Frogs"], "YA2": ["Central Coast Gold", "ISCHA 1", "Canberra 1", "MSW - Mixed", "Grafton Maroon"], "YB1": ["NSB Barracudas", "Central Coast Blue", "Newcastle 2", "SEHA Boys (U12/1)", "HNE Green", "Hunter"], "YB2": ["Manning Valley", "Central Coast Gold", "Newcastle 3", "SEHA Boys (U12/2)", "FNC Mixed", "Port Macquarie"], "YB3": ["Gloucester Panthers", "Orange", "Lithgow Red", "ISCH2", "HCC Jr Sandpipers", "Bathurst", "Tamworth White"], "KSA": ["NSB Stingrays", "Newcastle 1", "SEHA Girls", "ISCH1", "HNE Pink", "Canberra 1", "Grafton White", "Tamworth Green"], "KSB1": ["Tamworth Yellow", "HNE Purple", "SEHA Girls (U12/2)", "NSB Seals", "Newcastle 2"], "KSB2": ["NSB Dolphins", "Newcastle White", "SEHA Girls (U12/3)", "Tamworth Purple", "Central Coast Blue"], "KSB3": ["Newcastle Green", "Gloucester Panthers", "ISCH2", "Manning Valley", "NWSHA-G-1"], "KSB4": ["Orange", "Lithgow Green", "HCC Bandicoots", "Port Macquarie", "Bathurst Girls"]}, "competitions": {"York Cup A": ["YA1", "YA2"], "York Cup B": ["YB1", "YB2", "YB3"], "Kim Small Shield A": ["KSA"], "Kim Small Shield B": ["KSB1", "KSB2", "KSB3", "KSB4"]}, "finalsComp": {"YAA": "York Cup A", "YAB": "York Cup A", "YBA": "York Cup B", "YBB": "York Cup B", "YBC": "York Cup B", "YBD": "York Cup B", "YBE": "York Cup B", "KSAX": "Kim Small Shield A", "KSBA": "Kim Small Shield B", "KSBB": "Kim Small Shield B", "KSBC": "Kim Small Shield B", "KSBD": "Kim Small Shield B", "KSBE": "Kim Small Shield B", "KSBX": "Kim Small Shield B"}, "matches": [{"day": "Friday", "time": "19:00", "field": "Field 3", "div": "KSB1", "a": "Tamworth Yellow", "b": "HNE Purple"}, {"day": "Saturday", "time": "7:50", "field": "Field 1", "div": "YB3", "a": "Gloucester Panthers", "b": "Orange"}, {"day": "Saturday", "time": "8:10", "field": "Field 1", "div": "YB1", "a": "NSB Barracudas", "b": "Central Coast Blue"}, {"day": "Saturday", "time": "8:30", "field": "Field 1", "div": "YB3", "a": "Lithgow Red", "b": "ISCH2"}, {"day": "Saturday", "time": "8:50", "field": "Field 1", "div": "KSB1", "a": "SEHA Girls (U12/2)", "b": "NSB Seals"}, {"day": "Saturday", "time": "9:10", "field": "Field 1", "div": "YB3", "a": "HCC Jr Sandpipers", "b": "Bathurst"}, {"day": "Saturday", "time": "9:30", "field": "Field 1", "div": "YA1", "a": "HNE Blue", "b": "NWSHA-B-1"}, {"day": "Saturday", "time": "9:50", "field": "Field 1", "div": "YB3", "a": "Gloucester Panthers", "b": "Tamworth White"}, {"day": "Saturday", "time": "10:10", "field": "Field 1", "div": "YB1", "a": "Newcastle 2", "b": "SEHA Boys (U12/1)"}, {"day": "Saturday", "time": "10:30", "field": "Field 1", "div": "KSB1", "a": "HNE Purple", "b": "SEHA Girls (U12/2)"}, {"day": "Saturday", "time": "10:50", "field": "Field 1", "div": "YA2", "a": "Canberra 1", "b": "MSW - Mixed"}, {"day": "Saturday", "time": "11:35", "field": "Field 1", "div": "YB3", "a": "Orange", "b": "Lithgow Red"}, {"day": "Saturday", "time": "11:55", "field": "Field 1", "div": "KSB3", "a": "Gloucester Panthers", "b": "ISCH2"}, {"day": "Saturday", "time": "12:15", "field": "Field 1", "div": "KSB1", "a": "NSB Seals", "b": "Newcastle 2"}, {"day": "Saturday", "time": "12:35", "field": "Field 1", "div": "KSB4", "a": "Lithgow Green", "b": "HCC Bandicoots"}, {"day": "Saturday", "time": "12:55", "field": "Field 1", "div": "YB1", "a": "Central Coast Blue", "b": "Newcastle 2"}, {"day": "Saturday", "time": "13:15", "field": "Field 1", "div": "KSB2", "a": "Tamworth Purple", "b": "Central Coast Blue"}, {"day": "Saturday", "time": "13:35", "field": "Field 1", "div": "YA2", "a": "ISCHA 1", "b": "Canberra 1"}, {"day": "Saturday", "time": "13:55", "field": "Field 1", "div": "KSA", "a": "NSB Stingrays", "b": "Tamworth Green"}, {"day": "Saturday", "time": "14:15", "field": "Field 1", "div": "YB3", "a": "Lithgow Red", "b": "Gloucester Panthers"}, {"day": "Saturday", "time": "15:00", "field": "Field 1", "div": "KSA", "a": "NSB Stingrays", "b": "SEHA Girls"}, {"day": "Saturday", "time": "15:20", "field": "Field 1", "div": "YB3", "a": "Orange", "b": "ISCH2"}, {"day": "Saturday", "time": "15:40", "field": "Field 1", "div": "YB1", "a": "NSB Barracudas", "b": "Hunter"}, {"day": "Saturday", "time": "16:00", "field": "Field 1", "div": "YA1", "a": "Newcastle 1", "b": "NWSHA-B-1"}, {"day": "Saturday", "time": "16:20", "field": "Field 1", "div": "KSB3", "a": "Gloucester Panthers", "b": "Manning Valley"}, {"day": "Saturday", "time": "16:40", "field": "Field 1", "div": "YA2", "a": "Central Coast Gold", "b": "Canberra 1"}, {"day": "Saturday", "time": "17:00", "field": "Field 1", "div": "YB1", "a": "NSB Barracudas", "b": "HNE Green"}, {"day": "Saturday", "time": "17:20", "field": "Field 1", "div": "YA2", "a": "ISCHA 1", "b": "MSW - Mixed"}, {"day": "Saturday", "time": "17:40", "field": "Field 1", "div": "YB3", "a": "Gloucester Panthers", "b": "Bathurst"}, {"day": "Saturday", "time": "18:00", "field": "Field 1", "div": "KSB4", "a": "Lithgow Green", "b": "Port Macquarie"}, {"day": "Saturday", "time": "7:50", "field": "Field 2", "div": "KSB2", "a": "NSB Dolphins", "b": "Newcastle White"}, {"day": "Saturday", "time": "8:10", "field": "Field 2", "div": "YA1", "a": "NSB Sharks", "b": "Newcastle 1"}, {"day": "Saturday", "time": "8:30", "field": "Field 2", "div": "KSA", "a": "NSB Stingrays", "b": "Newcastle 1"}, {"day": "Saturday", "time": "8:50", "field": "Field 2", "div": "YA2", "a": "Central Coast Gold", "b": "ISCHA 1"}, {"day": "Saturday", "time": "9:10", "field": "Field 2", "div": "KSA", "a": "HNE Pink", "b": "Canberra 1"}, {"day": "Saturday", "time": "9:30", "field": "Field 2", "div": "YB2", "a": "Newcastle 3", "b": "SEHA Boys (U12/2)"}, {"day": "Saturday", "time": "9:50", "field": "Field 2", "div": "KSB1", "a": "Tamworth Yellow", "b": "Newcastle 2"}, {"day": "Saturday", "time": "10:10", "field": "Field 2", "div": "YA1", "a": "NSB Sharks", "b": "Tamworth Frogs"}, {"day": "Saturday", "time": "10:30", "field": "Field 2", "div": "KSB2", "a": "NSB Dolphins", "b": "Central Coast Blue"}, {"day": "Saturday", "time": "10:50", "field": "Field 2", "div": "KSA", "a": "Tamworth Green", "b": "Grafton White"}, {"day": "Saturday", "time": "11:35", "field": "Field 2", "div": "KSB2", "a": "Newcastle White", "b": "SEHA Girls (U12/3)"}, {"day": "Saturday", "time": "11:55", "field": "Field 2", "div": "KSA", "a": "Newcastle 1", "b": "SEHA Girls"}, {"day": "Saturday", "time": "12:15", "field": "Field 2", "div": "YA1", "a": "Newcastle 1", "b": "HNE Blue"}, {"day": "Saturday", "time": "12:35", "field": "Field 2", "div": "YA2", "a": "Central Coast Gold", "b": "Grafton Maroon"}, {"day": "Saturday", "time": "12:55", "field": "Field 2", "div": "KSA", "a": "Canberra 1", "b": "Grafton White"}, {"day": "Saturday", "time": "13:15", "field": "Field 2", "div": "YA1", "a": "NWSHA-B-1", "b": "Tamworth Frogs"}, {"day": "Saturday", "time": "13:35", "field": "Field 2", "div": "YB3", "a": "Bathurst", "b": "Tamworth White"}, {"day": "Saturday", "time": "13:55", "field": "Field 2", "div": "KSB4", "a": "Port Macquarie", "b": "Bathurst Girls"}, {"day": "Saturday", "time": "14:15", "field": "Field 2", "div": "YB2", "a": "Manning Valley", "b": "Port Macquarie"}, {"day": "Saturday", "time": "15:00", "field": "Field 2", "div": "KSB3", "a": "Newcastle Green", "b": "ISCH2"}, {"day": "Saturday", "time": "15:20", "field": "Field 2", "div": "YB2", "a": "Central Coast Gold", "b": "SEHA Boys (U12/2)"}, {"day": "Saturday", "time": "15:40", "field": "Field 2", "div": "KSB1", "a": "HNE Purple", "b": "NSB Seals"}, {"day": "Saturday", "time": "16:00", "field": "Field 2", "div": "KSA", "a": "Newcastle 1", "b": "ISCH1"}, {"day": "Saturday", "time": "16:20", "field": "Field 2", "div": "KSB4", "a": "Orange", "b": "HCC Bandicoots"}, {"day": "Saturday", "time": "16:40", "field": "Field 2", "div": "YB2", "a": "Manning Valley", "b": "FNC Mixed"}, {"day": "Saturday", "time": "17:00", "field": "Field 2", "div": "KSA", "a": "HNE Pink", "b": "Grafton White"}, {"day": "Saturday", "time": "17:20", "field": "Field 2", "div": "YA1", "a": "Tamworth Frogs", "b": "HNE Blue"}, {"day": "Saturday", "time": "17:40", "field": "Field 2", "div": "KSA", "a": "Canberra 1", "b": "Tamworth Green"}, {"day": "Saturday", "time": "18:00", "field": "Field 2", "div": "YA2", "a": "Canberra 1", "b": "Grafton Maroon"}, {"day": "Saturday", "time": "7:50", "field": "Field 3", "div": "YB2", "a": "Manning Valley", "b": "Central Coast Gold"}, {"day": "Saturday", "time": "8:10", "field": "Field 3", "div": "KSB3", "a": "Newcastle Green", "b": "Gloucester Panthers"}, {"day": "Saturday", "time": "8:30", "field": "Field 3", "div": "KSB4", "a": "Orange", "b": "Lithgow Green"}, {"day": "Saturday", "time": "8:50", "field": "Field 3", "div": "KSA", "a": "SEHA Girls", "b": "ISCH1"}, {"day": "Saturday", "time": "9:10", "field": "Field 3", "div": "KSB2", "a": "SEHA Girls (U12/3)", "b": "Tamworth Purple"}, {"day": "Saturday", "time": "9:30", "field": "Field 3", "div": "KSB3", "a": "ISCH2", "b": "Manning Valley"}, {"day": "Saturday", "time": "9:50", "field": "Field 3", "div": "KSB4", "a": "HCC Bandicoots", "b": "Port Macquarie"}, {"day": "Saturday", "time": "10:10", "field": "Field 3", "div": "YB2", "a": "FNC Mixed", "b": "Port Macquarie"}, {"day": "Saturday", "time": "10:30", "field": "Field 3", "div": "KSB3", "a": "Newcastle Green", "b": "NWSHA-G-1"}, {"day": "Saturday", "time": "10:50", "field": "Field 3", "div": "KSB4", "a": "Orange", "b": "Bathurst Girls"}, {"day": "Saturday", "time": "11:35", "field": "Field 3", "div": "YB1", "a": "HNE Green", "b": "Hunter"}, {"day": "Saturday", "time": "11:55", "field": "Field 3", "div": "YB2", "a": "Central Coast Gold", "b": "Newcastle 3"}, {"day": "Saturday", "time": "12:15", "field": "Field 3", "div": "YB3", "a": "ISCH2", "b": "HCC Jr Sandpipers"}, {"day": "Saturday", "time": "12:35", "field": "Field 3", "div": "KSA", "a": "ISCH1", "b": "HNE Pink"}, {"day": "Saturday", "time": "12:55", "field": "Field 3", "div": "YB2", "a": "SEHA Boys (U12/2)", "b": "FNC Mixed"}, {"day": "Saturday", "time": "13:15", "field": "Field 3", "div": "KSB3", "a": "Manning Valley", "b": "NWSHA-G-1"}, {"day": "Saturday", "time": "13:35", "field": "Field 3", "div": "KSB1", "a": "Tamworth Yellow", "b": "SEHA Girls (U12/2)"}, {"day": "Saturday", "time": "13:55", "field": "Field 3", "div": "YB1", "a": "SEHA Boys (U12/1)", "b": "HNE Green"}, {"day": "Saturday", "time": "14:15", "field": "Field 3", "div": "KSB2", "a": "NSB Dolphins", "b": "SEHA Girls (U12/3)"}, {"day": "Saturday", "time": "15:00", "field": "Field 3", "div": "YA1", "a": "NSB Sharks", "b": "HNE Blue"}, {"day": "Saturday", "time": "15:20", "field": "Field 3", "div": "YA2", "a": "MSW - Mixed", "b": "Grafton Maroon"}, {"day": "Saturday", "time": "15:40", "field": "Field 3", "div": "KSB2", "a": "Newcastle White", "b": "Tamworth Purple"}, {"day": "Saturday", "time": "16:00", "field": "Field 3", "div": "YB1", "a": "Central Coast Blue", "b": "SEHA Boys (U12/1)"}, {"day": "Saturday", "time": "16:20", "field": "Field 3", "div": "YB3", "a": "HCC Jr Sandpipers", "b": "Tamworth White"}, {"day": "Saturday", "time": "16:40", "field": "Field 3", "div": "KSB1", "a": "Newcastle 2", "b": "SEHA Girls (U12/2)"}, {"day": "Saturday", "time": "17:00", "field": "Field 3", "div": "KSB2", "a": "SEHA Girls (U12/3)", "b": "Central Coast Blue"}, {"day": "Saturday", "time": "17:20", "field": "Field 3", "div": "YB1", "a": "Newcastle 2", "b": "Hunter"}, {"day": "Saturday", "time": "17:40", "field": "Field 3", "div": "KSB3", "a": "NWSHA-G-1", "b": "ISCH2"}, {"day": "Saturday", "time": "18:00", "field": "Field 3", "div": "YB2", "a": "Newcastle 3", "b": "Port Macquarie"}, {"day": "Sunday", "time": "7:50", "field": "Field 1", "div": "KSB3", "a": "Newcastle Green", "b": "Manning Valley"}, {"day": "Sunday", "time": "8:10", "field": "Field 1", "div": "KSB3", "a": "NWSHA-G-1", "b": "Gloucester Panthers"}, {"day": "Sunday", "time": "8:30", "field": "Field 1", "div": "YB3", "a": "Orange", "b": "HCC Jr Sandpipers"}, {"day": "Sunday", "time": "8:50", "field": "Field 1", "div": "KSB2", "a": "NSB Dolphins", "b": "Tamworth Purple"}, {"day": "Sunday", "time": "9:10", "field": "Field 1", "div": "YB3", "a": "ISCH2", "b": "Tamworth White"}, {"day": "Sunday", "time": "9:30", "field": "Field 1", "div": "YB2", "a": "Central Coast Gold", "b": "Port Macquarie"}, {"day": "Sunday", "time": "9:50", "field": "Field 1", "div": "KSA", "a": "NSB Stingrays", "b": "HNE Pink"}, {"day": "Sunday", "time": "10:10", "field": "Field 1", "div": "YA1", "a": "NWSHA-B-1", "b": "NSB Sharks"}, {"day": "Sunday", "time": "10:30", "field": "Field 1", "div": "YA2", "a": "Central Coast Gold", "b": "MSW - Mixed"}, {"day": "Sunday", "time": "10:50", "field": "Field 1", "div": "YB1", "a": "NSB Barracudas", "b": "Newcastle 2"}, {"day": "Sunday", "time": "11:35", "field": "Field 1", "div": "KSA", "a": "NSB Stingrays", "b": "ISCH1"}, {"day": "Sunday", "time": "11:55", "field": "Field 1", "div": "YB1", "a": "SEHA Boys (U12/1)", "b": "Hunter"}, {"day": "Sunday", "time": "12:15", "field": "Field 1", "div": "YB2", "a": "SEHA Boys (U12/2)", "b": "Port Macquarie"}, {"day": "Sunday", "time": "12:35", "field": "Field 1", "div": "YB3", "a": "Lithgow Red", "b": "Tamworth White"}, {"day": "Sunday", "time": "12:55", "field": "Field 1", "div": "YAB", "a": "5th YA2", "b": "4th YA1"}, {"day": "Sunday", "time": "13:15", "field": "Field 1", "div": "YB3", "a": "Tamworth White", "b": "Orange"}, {"day": "Sunday", "time": "13:35", "field": "Field 1", "div": "KSA", "a": "NSB Stingrays", "b": "Canberra 1"}, {"day": "Sunday", "time": "13:55", "field": "Field 1", "div": "KSA", "a": "Newcastle 1", "b": "Grafton White"}, {"day": "Sunday", "time": "14:15", "field": "Field 1", "div": "KSBC", "a": "3rd KSB1", "b": "3rd KSB2"}, {"day": "Sunday", "time": "15:00", "field": "Field 1", "div": "KSBA", "a": "1st KSB3", "b": "1st KSB4"}, {"day": "Sunday", "time": "15:20", "field": "Field 1", "div": "KSBC", "a": "3rd KSB4", "b": "3rd KSB3"}, {"day": "Sunday", "time": "15:40", "field": "Field 1", "div": "KSBA", "a": "1st KSB3", "b": "1st KSB1"}, {"day": "Sunday", "time": "16:00", "field": "Field 1", "div": "KSBC", "a": "3rd KSB1", "b": "3rd KSB3"}, {"day": "Sunday", "time": "16:20", "field": "Field 1", "div": "KSBE", "a": "5th KSB1", "b": "5th KSB3"}, {"day": "Sunday", "time": "16:40", "field": "Field 1", "div": "KSBC", "a": "3rd KSB2", "b": "3rd KSB4"}, {"day": "Sunday", "time": "17:00", "field": "Field 1", "div": "KSBE", "a": "5th KSB2", "b": "5th KSB3"}, {"day": "Sunday", "time": "17:20", "field": "Field 1", "div": "YBC", "a": "Lowest Ranked 3rd in YB1-YB3", "b": "4th YB1"}, {"day": "Sunday", "time": "17:40", "field": "Field 1", "div": "YBA", "a": "1st YB3", "b": "Highest Placed 2nd YB1 to YB3"}, {"day": "Sunday", "time": "18:00", "field": "Field 1", "div": "YBC", "a": "4th YB2", "b": "4th YB3"}, {"day": "Sunday", "time": "18:20", "field": "Field 1", "div": "YBC", "a": "Lowest Ranked 3rd in YB1-YB3", "b": "4th YB2"}, {"day": "Sunday", "time": "7:50", "field": "Field 2", "div": "KSB4", "a": "HCC Bandicoots", "b": "Bathurst Girls"}, {"day": "Sunday", "time": "8:10", "field": "Field 2", "div": "KSB4", "a": "Orange", "b": "Port Macquarie"}, {"day": "Sunday", "time": "8:30", "field": "Field 2", "div": "KSB1", "a": "SEHA Girls (U12/2)", "b": "Newcastle 2"}, {"day": "Sunday", "time": "8:50", "field": "Field 2", "div": "KSB4", "a": "Lithgow Green", "b": "Bathurst Girls"}, {"day": "Sunday", "time": "9:10", "field": "Field 2", "div": "KSB1", "a": "Tamworth Yellow", "b": "NSB Seals"}, {"day": "Sunday", "time": "9:30", "field": "Field 2", "div": "KSB2", "a": "Newcastle White", "b": "Central Coast Blue"}, {"day": "Sunday", "time": "9:50", "field": "Field 2", "div": "KSA", "a": "SEHA Girls", "b": "Grafton White"}, {"day": "Sunday", "time": "10:10", "field": "Field 2", "div": "KSA", "a": "ISCH1", "b": "Tamworth Green"}, {"day": "Sunday", "time": "10:30", "field": "Field 2", "div": "KSA", "a": "SEHA Girls", "b": "Canberra 1"}, {"day": "Sunday", "time": "10:50", "field": "Field 2", "div": "YB2", "a": "Newcastle 3", "b": "FNC Mixed"}, {"day": "Sunday", "time": "11:35", "field": "Field 2", "div": "YB2", "a": "Newcastle 3", "b": "Manning Valley"}, {"day": "Sunday", "time": "11:55", "field": "Field 2", "div": "KSA", "a": "Newcastle 1", "b": "HNE Pink"}, {"day": "Sunday", "time": "12:15", "field": "Field 2", "div": "YB3", "a": "Gloucester Panthers", "b": "HCC Jr Sandpipers"}, {"day": "Sunday", "time": "12:35", "field": "Field 2", "div": "YB3", "a": "Bathurst", "b": "ISCH2"}, {"day": "Sunday", "time": "12:55", "field": "Field 2", "div": "YAA", "a": "2nd YA2", "b": "1st YA1"}, {"day": "Sunday", "time": "13:15", "field": "Field 2", "div": "YAA", "a": "Highest 3rd Place in YA1 and YA2", "b": "2nd YA1"}, {"day": "Sunday", "time": "13:35", "field": "Field 2", "div": "YAA", "a": "2nd YA2", "b": "1st YA2"}, {"day": "Sunday", "time": "13:55", "field": "Field 2", "div": "KSBA", "a": "1st KSB2", "b": "1st KSB1"}, {"day": "Sunday", "time": "14:15", "field": "Field 2", "div": "KSBD", "a": "4th KSB1", "b": "4th KSB2"}, {"day": "Sunday", "time": "15:00", "field": "Field 2", "div": "YAB", "a": "5th YA1", "b": "4th YA2"}, {"day": "Sunday", "time": "15:20", "field": "Field 2", "div": "YAA", "a": "1st YA1", "b": "Highest 3rd Place in YA1 and YA2"}, {"day": "Sunday", "time": "15:40", "field": "Field 2", "div": "YAB", "a": "5th YA2", "b": "Lowest 3rd Place in YA1 and YA2"}, {"day": "Sunday", "time": "16:00", "field": "Field 2", "div": "YAA", "a": "2nd YA1", "b": "1st YA2"}, {"day": "Sunday", "time": "16:20", "field": "Field 2", "div": "YAB", "a": "4th YA1", "b": "4th YA2"}, {"day": "Sunday", "time": "16:40", "field": "Field 2", "div": "KSBA", "a": "1st KSB2", "b": "1st KSB4"}, {"day": "Sunday", "time": "17:00", "field": "Field 2", "div": "YBA", "a": "1st YB1", "b": "1st YB2"}, {"day": "Sunday", "time": "17:20", "field": "Field 2", "div": "YBB", "a": "Middle Ranked 2nd in YB1-YB3", "b": "Lowest Ranked 2nd in YB1-YB3"}, {"day": "Sunday", "time": "17:40", "field": "Field 2", "div": "KSBD", "a": "4th KSB2", "b": "4th KSB4"}, {"day": "Sunday", "time": "18:00", "field": "Field 2", "div": "KSBE", "a": "5th KSB1", "b": "5th KSB3"}, {"day": "Sunday", "time": "18:20", "field": "Field 2", "div": "YBE", "a": "Middle Ranked 6th in YB1-YB3", "b": "7th KSB3"}, {"day": "Sunday", "time": "7:50", "field": "Field 3", "div": "YB1", "a": "NSB Barracudas", "b": "SEHA Boys (U12/1)"}, {"day": "Sunday", "time": "8:10", "field": "Field 3", "div": "YB2", "a": "SEHA Boys (U12/2)", "b": "Manning Valley"}, {"day": "Sunday", "time": "8:30", "field": "Field 3", "div": "YB3", "a": "Lithgow Red", "b": "Bathurst"}, {"day": "Sunday", "time": "8:50", "field": "Field 3", "div": "KSA", "a": "Newcastle 1", "b": "Canberra 1"}, {"day": "Sunday", "time": "9:10", "field": "Field 3", "div": "YB1", "a": "Central Coast Blue", "b": "Hunter"}, {"day": "Sunday", "time": "9:30", "field": "Field 3", "div": "YB3", "a": "Lithgow Red", "b": "HCC Jr Sandpipers"}, {"day": "Sunday", "time": "9:50", "field": "Field 3", "div": "YB1", "a": "Newcastle 2", "b": "HNE Green"}, {"day": "Sunday", "time": "10:10", "field": "Field 3", "div": "YA1", "a": "Newcastle 1", "b": "Tamworth Frogs"}, {"day": "Sunday", "time": "10:30", "field": "Field 3", "div": "YA2", "a": "ISCHA 1", "b": "Grafton Maroon"}, {"day": "Sunday", "time": "10:50", "field": "Field 3", "div": "YB3", "a": "Gloucester Panthers", "b": "ISCH2"}, {"day": "Sunday", "time": "11:35", "field": "Field 3", "div": "YB3", "a": "Orange", "b": "Bathurst"}, {"day": "Sunday", "time": "11:55", "field": "Field 3", "div": "YB1", "a": "Central Coast Blue", "b": "HNE Green"}, {"day": "Sunday", "time": "12:15", "field": "Field 3", "div": "YB2", "a": "Central Coast Gold", "b": "FNC Mixed"}, {"day": "Sunday", "time": "12:35", "field": "Field 3", "div": "YAB", "a": "5th YA1", "b": "Lowest 3rd Place in YA1 and YA2"}, {"day": "Sunday", "time": "12:55", "field": "Field 3", "div": "KSA", "a": "ISCH1", "b": "Grafton White"}, {"day": "Sunday", "time": "13:15", "field": "Field 3", "div": "KSA", "a": "Newcastle 1", "b": "Tamworth Green"}, {"day": "Sunday", "time": "13:35", "field": "Field 3", "div": "KSA", "a": "SEHA Girls", "b": "HNE Pink"}, {"day": "Sunday", "time": "13:55", "field": "Field 3", "div": "KSBB", "a": "2nd KSB1", "b": "2nd KSB2"}, {"day": "Sunday", "time": "14:15", "field": "Field 3", "div": "KSBE", "a": "5th KSB1", "b": "5th KSB2"}, {"day": "Sunday", "time": "15:00", "field": "Field 3", "div": "KSBB", "a": "2nd KSB3", "b": "2nd KSB4"}, {"day": "Sunday", "time": "15:20", "field": "Field 3", "div": "KSBE", "a": "5th KSB3", "b": "5th KSB4"}, {"day": "Sunday", "time": "15:40", "field": "Field 3", "div": "KSBD", "a": "4th KSB3", "b": "4th KSB4"}, {"day": "Sunday", "time": "16:00", "field": "Field 3", "div": "KSBB", "a": "2nd KSB1", "b": "2nd KSB3"}, {"day": "Sunday", "time": "16:20", "field": "Field 3", "div": "KSBD", "a": "4th KSB3", "b": "4th KSB1"}, {"day": "Sunday", "time": "16:40", "field": "Field 3", "div": "KSBB", "a": "2nd KSB4", "b": "2nd KSB2"}, {"day": "Sunday", "time": "17:00", "field": "Field 3", "div": "YBD", "a": "5th YB1", "b": "5th YB2"}, {"day": "Sunday", "time": "17:20", "field": "Field 3", "div": "YBE", "a": "Lowest Ranked 6th in YB1-YB3", "b": "Middle Ranked 6th in YB1-YB3"}, {"day": "Sunday", "time": "17:40", "field": "Field 3", "div": "YBB", "a": "Highest Ranked 3rd in YB1-YB3", "b": "Middle Ranked 3rd in YB1-YB3"}, {"day": "Sunday", "time": "18:00", "field": "Field 3", "div": "YBD", "a": "5th YB3", "b": "Highest Ranked 6th in YB1-YB3"}, {"day": "Sunday", "time": "18:20", "field": "Field 3", "div": "YBD", "a": "5th YB1", "b": "5th YB3"}, {"day": "Monday", "time": "7:40", "field": "Field 1", "div": "KSBA", "a": "1st KSB1", "b": "1st KSB4"}, {"day": "Monday", "time": "8:00", "field": "Field 1", "div": "KSBD", "a": "4th KSB1", "b": "4th KSB4"}, {"day": "Monday", "time": "8:20", "field": "Field 1", "div": "YAB", "a": "5th YA1", "b": "5th YA2"}, {"day": "Monday", "time": "8:40", "field": "Field 1", "div": "KSBA", "a": "1st KSB2", "b": "1st KSB3"}, {"day": "Monday", "time": "9:00", "field": "Field 1", "div": "YAA", "a": "1st YA1", "b": "2nd YA1"}, {"day": "Monday", "time": "9:20", "field": "Field 1", "div": "YBE", "a": "Lowest Ranked 6th in YB1-YB3", "b": "7th KSB3"}, {"day": "Monday", "time": "9:40", "field": "Field 1", "div": "YBA", "a": "1st YB1", "b": "1st YB3"}, {"day": "Monday", "time": "10:00", "field": "Field 1", "div": "YBE", "a": "Middle Ranked 6th in YB1-YB3", "b": "Lowest Ranked 6th in YB1-YB3"}, {"day": "Monday", "time": "10:20", "field": "Field 1", "div": "YBD", "a": "5th YB1", "b": "Highest Ranked 6th in YB1-YB3"}, {"day": "Monday", "time": "10:40", "field": "Field 1", "div": "YBA", "a": "1st YB2", "b": "Highest Placed 2nd YB1 to YB3"}, {"day": "Monday", "time": "11:20", "field": "Field 1", "div": "KSBX", "a": "3rd KSBE", "b": "4th KSBE"}, {"day": "Monday", "time": "11:40", "field": "Field 1", "div": "KSBX", "a": "3rd KSBD", "b": "4th KSBD"}, {"day": "Monday", "time": "12:00", "field": "Field 1", "div": "KSBX", "a": "1st KSBD", "b": "2nd KSBD"}, {"day": "Monday", "time": "12:20", "field": "Field 1", "div": "KSBX", "a": "3rd KSBC", "b": "4th KSBC"}, {"day": "Monday", "time": "12:40", "field": "Field 1", "div": "KSBX", "a": "3rd KSBB", "b": "4th KSBB"}, {"day": "Monday", "time": "13:00", "field": "Field 1", "div": "YBB", "a": "Lowest Ranked 2nd in YB1-YB3", "b": "Highest Ranked 3rd in YB1-YB3"}, {"day": "Monday", "time": "13:20", "field": "Field 1", "div": "YBA", "a": "1st YB2", "b": "1st YB3"}, {"day": "Monday", "time": "13:40", "field": "Field 1", "div": "KSAX", "a": "1st KSA", "b": "2nd KSA"}, {"day": "Monday", "time": "7:40", "field": "Field 2", "div": "KSA", "a": "SEHA Girls", "b": "Tamworth Green"}, {"day": "Monday", "time": "8:00", "field": "Field 2", "div": "KSA", "a": "ISCH1", "b": "Canberra 1"}, {"day": "Monday", "time": "8:20", "field": "Field 2", "div": "YBC", "a": "4th YB1", "b": "4th YB3"}, {"day": "Monday", "time": "8:40", "field": "Field 2", "div": "YAA", "a": "2nd YA2", "b": "Highest 3rd Place in YA1 and YA2"}, {"day": "Monday", "time": "9:00", "field": "Field 2", "div": "KSA", "a": "HNE Pink", "b": "Tamworth Green"}, {"day": "Monday", "time": "9:20", "field": "Field 2", "div": "YBD", "a": "Highest Ranked 6th in YB1-YB3", "b": "5th YB2"}, {"day": "Monday", "time": "9:40", "field": "Field 2", "div": "KSBC", "a": "3rd KSB2", "b": "3rd KSB3"}, {"day": "Monday", "time": "10:00", "field": "Field 2", "div": "YBB", "a": "Middle Ranked 2nd in YB1-YB3", "b": "Highest Ranked 3rd in YB1-YB3"}, {"day": "Monday", "time": "10:20", "field": "Field 2", "div": "YAA", "a": "Highest 3rd Place in YA1 and YA2", "b": "1st YA2"}, {"day": "Monday", "time": "10:40", "field": "Field 2", "div": "YBB", "a": "Lowest Ranked 2nd in YB1-YB3", "b": "Middle Ranked 3rd in YB1-YB3"}, {"day": "Monday", "time": "11:20", "field": "Field 2", "div": "KSBX", "a": "1st KSBE", "b": "2nd KSBE"}, {"day": "Monday", "time": "11:40", "field": "Field 2", "div": "KSAX", "a": "5th KSA", "b": "6th KSA"}, {"day": "Monday", "time": "12:00", "field": "Field 2", "div": "YBE", "a": "Middle Ranked 6th in YB1-YB3", "b": "7th KSB3"}, {"day": "Monday", "time": "12:20", "field": "Field 2", "div": "KSBX", "a": "1st KSBC", "b": "2nd KSBC"}, {"day": "Monday", "time": "12:40", "field": "Field 2", "div": "YAA", "a": "2nd YA2", "b": "2nd YA1"}, {"day": "Monday", "time": "13:00", "field": "Field 2", "div": "YAB", "a": "Lowest 3rd Place in YA1 and YA2", "b": "4th YA2"}, {"day": "Monday", "time": "13:20", "field": "Field 2", "div": "KSBX", "a": "1st KSBA", "b": "2nd KSBA"}, {"day": "Monday", "time": "13:40", "field": "Field 2", "div": "YAA", "a": "1st YA1", "b": "1st YA2"}, {"day": "Monday", "time": "7:40", "field": "Field 3", "div": "KSBB", "a": "2nd KSB1", "b": "2nd KSB4"}, {"day": "Monday", "time": "8:00", "field": "Field 3", "div": "KSBC", "a": "3rd KSB4", "b": "3rd KSB1"}, {"day": "Monday", "time": "8:20", "field": "Field 3", "div": "KSBB", "a": "2nd KSB2", "b": "2nd KSB3"}, {"day": "Monday", "time": "8:40", "field": "Field 3", "div": "KSA", "a": "Grafton White", "b": "NSB Stingrays"}, {"day": "Monday", "time": "9:00", "field": "Field 3", "div": "KSBE", "a": "5th KSB2", "b": "5th KSB3"}, {"day": "Monday", "time": "9:20", "field": "Field 3", "div": "YBC", "a": "Lowest Ranked 3rd in YB1-YB3", "b": "4th YB3"}, {"day": "Monday", "time": "9:40", "field": "Field 3", "div": "KSBD", "a": "4th KSB2", "b": "4th KSB3"}, {"day": "Monday", "time": "10:00", "field": "Field 3", "div": "YAB", "a": "Lowest 3rd Place in YA1 and YA2", "b": "4th YA1"}, {"day": "Monday", "time": "10:20", "field": "Field 3", "div": "KSAX", "a": "7th KSA", "b": "8th KSA"}, {"day": "Monday", "time": "10:40", "field": "Field 3", "div": "YAB", "a": "5th YA2", "b": "4th YA2"}, {"day": "Monday", "time": "11:20", "field": "Field 3", "div": "YBB", "a": "Middle Ranked 2nd in YB1-YB3", "b": "Middle Ranked 3rd in YB1-YB3"}, {"day": "Monday", "time": "11:40", "field": "Field 3", "div": "YBA", "a": "1st YB1", "b": "Highest Placed 2nd YB1 to YB3"}, {"day": "Monday", "time": "12:00", "field": "Field 3", "div": "YAB", "a": "5th YA1", "b": "4th YA1"}, {"day": "Monday", "time": "12:20", "field": "Field 3", "div": "YBD", "a": "5th YB2", "b": "5th YB3"}, {"day": "Monday", "time": "12:40", "field": "Field 3", "div": "YBC", "a": "4th YB1", "b": "4th YB2"}, {"day": "Monday", "time": "13:00", "field": "Field 3", "div": "KSBX", "a": "1st KSBB", "b": "2nd KSBB"}, {"day": "Monday", "time": "13:20", "field": "Field 3", "div": "KSBX", "a": "3rd KSBA", "b": "4th KSBA"}, {"day": "Monday", "time": "13:40", "field": "Field 3", "div": "KSAX", "a": "3rd KSA", "b": "4th KSA"}]};
+const POOLS = Object.keys(DATA.rosters);
+const COMP_ORDER = Object.keys(DATA.competitions);
+const DAYS = ["Friday","Saturday","Sunday","Monday"];
+const DAYSHORT = {Friday:"Fri",Saturday:"Sat",Sunday:"Sun",Monday:"Mon"};
+const FIELDCLASS = {"Field 1":"f1","Field 2":"f2","Field 3":"f3"};
+const FIELD_META = {
+  "Field 1":{cls:"f1",side:"Eastern Side",color:"var(--f1)"},
+  "Field 2":{cls:"f2",side:"Centre Field",color:"var(--f2)"},
+  "Field 3":{cls:"f3",side:"Western Side",color:"var(--f3)"},
+};
+const ALL = "__ALL__";
+
+// pool -> competition
+const POOL_COMP = {};
+for(const c of COMP_ORDER){ for(const p of DATA.competitions[c]) POOL_COMP[p]=c; }
+// competition -> finals codes
+const COMP_FINALS = {};
+for(const [code,comp] of Object.entries(DATA.finalsComp)){ (COMP_FINALS[comp]=COMP_FINALS[comp]||[]).push(code); }
+const FINALS_CODES = new Set(Object.keys(DATA.finalsComp));
+
+// flat team index for search
+const ALL_TEAMS = [];
+for(const p of POOLS){ for(const name of DATA.rosters[p]) ALL_TEAMS.push({name, pool:p, comp:POOL_COMP[p]}); }
+
+let state = { comp:"York Cup B", pool:"YB1", team:"YB1|Central Coast Blue" };
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+/* ---------------- filter population ---------------- */
+function fillSelect(sel, options, value){
+  sel.innerHTML = options.map(o=>`<option value="${esc(o.v)}"${o.v===value?' selected':''}>${esc(o.t)}</option>`).join("");
+}
+function poolOptions(){
+  const ps = state.comp===ALL ? POOLS : DATA.competitions[state.comp];
+  return [{v:ALL,t:"All pools"}].concat(ps.map(p=>({v:p,t:p})));
+}
+function teamOptions(){
+  let list;
+  if(state.pool!==ALL){ list = DATA.rosters[state.pool].map(n=>({pool:state.pool,name:n})); }
+  else if(state.comp!==ALL){ list = DATA.competitions[state.comp].flatMap(p=>DATA.rosters[p].map(n=>({pool:p,name:n}))); }
+  else { list = ALL_TEAMS.map(t=>({pool:t.pool,name:t.name})); }
+  const broad = state.pool===ALL;
+  return [{v:ALL,t:"All teams"}].concat(list.map(t=>({v:t.pool+"|"+t.name, t: broad? `${t.name} — ${t.pool}` : t.name})));
+}
+function buildFilters(){
+  fillSelect($("fComp"), [{v:ALL,t:"All competitions"}].concat(COMP_ORDER.map(c=>({v:c,t:c}))), state.comp);
+  fillSelect($("fPool"), poolOptions(), state.pool);
+  fillSelect($("fTeam"), teamOptions(), state.team);
+}
+
+/* ---------------- scope resolution ---------------- */
+function selTeam(){ if(state.team===ALL) return null; const [pool,...r]=state.team.split("|"); return {pool, name:r.join("|")}; }
+function scopePools(){
+  if(state.pool!==ALL) return [state.pool];
+  if(state.comp!==ALL) return DATA.competitions[state.comp].slice();
+  return POOLS.slice();
+}
+function poolMatchesInScope(){
+  const t = selTeam();
+  if(t) return DATA.matches.filter(m=>m.div===t.pool && (m.a===t.name||m.b===t.name));
+  const ps = new Set(scopePools());
+  return DATA.matches.filter(m=>ps.has(m.div));
+}
+function finalsCompsInScope(){
+  if(state.comp!==ALL) return [state.comp];
+  // all competitions touched by scope pools
+  return [...new Set(scopePools().map(p=>POOL_COMP[p]))];
+}
+
+/* ---------------- rendering ---------------- */
+function render(){
+  buildFilters();
+  const t = selTeam();
+  const pm = poolMatchesInScope();
+
+  // scope chips
+  const sc = $("scope"); sc.innerHTML="";
+  sc.insertAdjacentHTML("beforeend", `<span class="lead">Showing</span>`);
+  if(t){ sc.insertAdjacentHTML("beforeend", `<span class="chip team">${esc(t.name)}</span>`); }
+  sc.insertAdjacentHTML("beforeend", `<span class="chip">${esc(state.comp===ALL?"All competitions":state.comp)}</span>`);
+  if(state.pool!==ALL) sc.insertAdjacentHTML("beforeend", `<span class="chip">${esc(state.pool)}</span>`);
+
+  // KPIs
+  const teamSet = new Set();
+  for(const m of pm){ teamSet.add(m.div+"|"+m.a); teamSet.add(m.div+"|"+m.b); }
+  $("kMatches").textContent = pm.length;
+  $("kMatchesHint").textContent = t ? "games for this team" : (state.pool!==ALL?`full ${state.pool} round-robin`:"scheduled pool games");
+  $("kTeams").textContent = teamSet.size;
+  $("kTeamsHint").textContent = t ? "this team + opponents" : "unique teams in selection";
+
+  renderTeamList(teamSet, t);
+  renderDays(pm, t);
+  renderFinals(t);
+  renderRobin(t);
+}
+
+function renderTeamList(teamSet, t){
+  // group by pool, preserve roster order
+  const byPool = {};
+  for(const key of teamSet){ const [p,...r]=key.split("|"); (byPool[p]=byPool[p]||[]).push(r.join("|")); }
+  const poolsShown = Object.keys(byPool).sort((a,b)=>POOLS.indexOf(a)-POOLS.indexOf(b));
+  $("teamCardMeta").textContent = `${teamSet.size} team${teamSet.size!==1?"s":""}`;
+  let html=""; let n=0; const multi = poolsShown.length>1;
+  for(const p of poolsShown){
+    if(multi) html += `<li class="grp" style="border:0">${esc(p)} · ${esc(POOL_COMP[p])}</li>`;
+    const ordered = DATA.rosters[p].filter(x=>byPool[p].includes(x));
+    for(const name of ordered){
+      n++;
+      const isSel = t && t.pool===p && t.name===name;
+      html += `<li class="${isSel?'sel':''}"><span class="n">${n}</span><span class="tn">${esc(name)}</span>`+
+              `<button class="pick" data-pick="${esc(p+'|'+name)}">${isSel?'selected':'view'}</button></li>`;
+    }
+  }
+  $("teamList").innerHTML = html || `<li style="border:0;color:var(--mute)">No teams in this selection.</li>`;
+}
+
+function fieldCell(field){
+  const fm = FIELD_META[field]||{cls:"",side:""};
+  return `<span class="fieldwrap"><span class="fieldtag ${fm.cls}"><span class="dot"></span>${esc(field)}</span><span class="side">${esc(fm.side)}</span></span>`;
+}
+function rowFor(m, t){
+  let team=m.a, opp=m.b;
+  if(t && m.b===t.name && m.a!==t.name){ team=m.b; opp=m.a; }
+  const me = t ? "me" : "";
+  const hi = t ? "hi" : "";
+  const posTeam = !DATA.rosters[m.div]; // finals row?
+  return `<tr class="${me}">`+
+    `<td class="c-time t-time" data-label="Time">${esc(m.time)}</td>`+
+    `<td class="c-div" data-label="Div"><span class="divbadge">${esc(m.div)}</span></td>`+
+    `<td class="c-team t-team ${hi} ${posTeam?'posn':''}" data-label="Team">${esc(team)}</td>`+
+    `<td class="c-opp t-team ${posTeam?'posn':''}" data-label="Opponent">${esc(opp)}</td>`+
+    `<td class="c-field" data-label="Field">${fieldCell(m.field)}</td>`+
+  `</tr>`;
+}
+function renderDays(pm, t){
+  let html="";
+  for(const day of DAYS){
+    const rows = pm.filter(m=>m.day===day).sort((a,b)=>toMin(a.time)-toMin(b.time));
+    html += `<div class="day"><div class="daybar"><h2>${day}</h2>`+
+            (rows.length?`<span class="count numbers">${rows.length} game${rows.length>1?"s":""}</span>`:``)+`</div>`;
+    if(!rows.length){
+      html += `<div class="empty">${day==="Monday"||day==="Sunday"?"No pool games — see the finals path below.":"No games scheduled."}</div></div>`;
+      continue;
+    }
+    html += `<table class="fix"><thead><tr><th>Time</th><th>Div</th><th>Team</th><th>Opponent</th><th>Field</th></tr></thead><tbody>`;
+    for(const m of rows) html += rowFor(m, t);
+    html += `</tbody></table></div>`;
+  }
+  $("days").innerHTML = html;
+}
+function toMin(t){ const [h,m]=t.split(":").map(Number); return h*60+m; }
+
+function renderFinals(t){
+  const comps = finalsCompsInScope();
+  const codes = new Set(comps.flatMap(c=>COMP_FINALS[c]||[]));
+  const fm = DATA.matches.filter(m=>codes.has(m.div)).sort((a,b)=>DAYS.indexOf(a.day)-DAYS.indexOf(b.day)||toMin(a.time)-toMin(b.time));
+  const wrap = $("finalsWrap");
+  if(!fm.length){ wrap.style.display="none"; return; }
+  wrap.style.display="";
+  $("finalsTitle").textContent = comps.length===1 ? `Finals path · ${comps[0]}` : "Finals path (placement games)";
+  // open by default when a single team or single competition is in focus
+  wrap.open = !!t || (state.comp!==ALL);
+  let html="";
+  for(const day of DAYS){
+    const rows = fm.filter(m=>m.day===day);
+    if(!rows.length) continue;
+    html += `<p class="fday">${day}</p><table class="fix"><thead><tr><th>Time</th><th>Div</th><th>Team</th><th>Opponent</th><th>Field</th></tr></thead><tbody>`;
+    for(const m of rows) html += rowFor(m, null);
+    html += `</tbody></table>`;
+  }
+  $("finalsBody").innerHTML = html;
+}
+
+function renderRobin(t){
+  const body=$("matrixBody");
+  if(t){
+    $("robinTitle").textContent="Your matchups";
+    $("matrixMeta").textContent=`${t.name} · ${t.pool}`;
+    body.innerHTML=renderWheel(t);
+    return;
+  }
+  const ps=scopePools();
+  if(ps.length===1){
+    $("robinTitle").textContent="Round-robin grid";
+    $("matrixMeta").textContent=`${ps[0]} · ${DATA.rosters[ps[0]].length} teams`;
+    body.innerHTML=renderHalfTable(ps[0]);
+    return;
+  }
+  $("robinTitle").textContent="Round-robin grid";
+  $("matrixMeta").textContent="";
+  body.innerHTML = `<div class="matrix-empty">Pick a single pool (or a team) to see its round-robin grid.${state.comp!==ALL?` ${esc(state.comp)} has ${ps.length} pools.`:""}</div>`;
+}
+
+function renderWheel(t){
+  const games = DATA.matches.filter(m=>m.div===t.pool && (m.a===t.name||m.b===t.name))
+    .sort((a,b)=>DAYS.indexOf(a.day)-DAYS.indexOf(b.day)||toMin(a.time)-toMin(b.time));
+  const opp = games.map(m=>({name:(m.a===t.name?m.b:m.a), day:m.day, time:m.time, field:m.field}));
+  const N=opp.length;
+  if(!N) return `<div class="matrix-empty">No scheduled games for this team.</div>`;
+  const W=600,H=440,cx=300,cy=216,R=(N>5?150:135);
+  let s=`<svg viewBox="0 0 ${W} ${H}" class="wheel" role="img" aria-label="Matchups for ${esc(t.name)}">`;
+  const pts = opp.map((o,i)=>{ const a=(-90 + i*360/N)*Math.PI/180; return {x:cx+R*Math.cos(a), y:cy+R*Math.sin(a), cos:Math.cos(a)}; });
+  pts.forEach(p=>{ s+=`<line x1="${cx}" y1="${cy}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" class="spoke"/>`; });
+  opp.forEach((o,i)=>{
+    const p=pts[i], fm=FIELD_META[o.field]||{};
+    const anchor = p.cos>0.30?'start':(p.cos<-0.30?'end':'middle');
+    const lx = p.x + (anchor==='start'?11:anchor==='end'?-11:0);
+    let nameY, timeY;
+    if(anchor==='middle'){ if(p.y<cy){ nameY=p.y-17; timeY=p.y-6; } else { nameY=p.y+15; timeY=p.y+26; } }
+    else { nameY=p.y-3; timeY=p.y+10; }
+    s+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="6" fill="${fm.color||'#888'}" stroke="#fff" stroke-width="2"/>`;
+    s+=`<text x="${lx.toFixed(1)}" y="${nameY.toFixed(1)}" text-anchor="${anchor}" class="wn">${esc(o.name)}</text>`;
+    s+=`<text x="${lx.toFixed(1)}" y="${timeY.toFixed(1)}" text-anchor="${anchor}" class="wm">${DAYSHORT[o.day]} ${esc(o.time)} · ${esc(fm.side||'')}</text>`;
+  });
+  const pw=Math.max(104, t.name.length*8.4+26);
+  s+=`<rect x="${(cx-pw/2).toFixed(1)}" y="${cy-22}" width="${pw.toFixed(1)}" height="44" rx="22" class="hub"/>`;
+  s+=`<text x="${cx}" y="${cy-1}" text-anchor="middle" class="hubt">${esc(t.name)}</text>`;
+  s+=`<text x="${cx}" y="${cy+13}" text-anchor="middle" class="hubs">${esc(t.pool)} · ${N} GAMES</text>`;
+  s+=`</svg>`;
+  return `<div class="wheelwrap">${s}</div>`;
+}
+
+function renderHalfTable(pool){
+  const roster=DATA.rosters[pool];
+  const pmap={};
+  for(const m of DATA.matches){ if(m.div!==pool) continue; pmap[m.a+"~"+m.b]=m; pmap[m.b+"~"+m.a]=m; }
+  let html=`<div class="matrix-scroll"><table class="matrix"><thead><tr><th class="corner"></th>`;
+  for(const c of roster) html+=`<th>${esc(shortName(c))}</th>`;
+  html+=`</tr></thead><tbody>`;
+  roster.forEach((r,ri)=>{
+    html+=`<tr><th>${esc(r)}</th>`;
+    roster.forEach((c,ci)=>{
+      if(ci===ri){ html+=`<td class="diag"></td>`; }
+      else if(ci<ri){ html+=`<td class="below"></td>`; }
+      else {
+        const m=pmap[r+"~"+c];
+        if(m){ const fm=FIELD_META[m.field]||{}; html+=`<td><span class="mt">${DAYSHORT[m.day]} ${esc(m.time)}</span><span class="mf"><span class="fdot ${fm.cls}"></span>${m.field.replace('Field ','F')}</span></td>`; }
+        else html+=`<td class="empty">—</td>`;
+      }
+    });
+    html+=`</tr>`;
+  });
+  html+=`</tbody></table></div><p class="matrix-foot">Upper half only, so each match appears once. Dot colour shows the field.</p>`;
+  return html;
+}
+function shortName(n){ return n.length>14 ? n.replace("SEHA","S").replace("Newcastle","N'cle") : n; }
+
+/* ---------------- events ---------------- */
+$("fComp").addEventListener("change", e=>{ state.comp=e.target.value; state.pool=ALL; state.team=ALL; render(); });
+$("fPool").addEventListener("change", e=>{ state.pool=e.target.value; state.team=ALL; if(state.pool!==ALL) state.comp=POOL_COMP[state.pool]; render(); });
+$("fTeam").addEventListener("change", e=>{ state.team=e.target.value; if(state.team!==ALL){ const tt=selTeam(); state.pool=tt.pool; state.comp=POOL_COMP[tt.pool]; } render(); });
+$("resetBtn").addEventListener("click", ()=>{ state={comp:ALL,pool:ALL,team:ALL}; render(); });
+
+document.getElementById("teamList").addEventListener("click", e=>{
+  const b=e.target.closest("button[data-pick]"); if(!b) return;
+  selectTeam(b.getAttribute("data-pick"));
+});
+function selectTeam(val){
+  const tt = (()=>{const [p,...r]=val.split("|");return {pool:p,name:r.join("|")};})();
+  state.team=val; state.pool=tt.pool; state.comp=POOL_COMP[tt.pool];
+  closeResults(); $("teamSearch").value=""; render();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* search */
+const sInput=$("teamSearch"), sRes=$("searchResults");
+let activeIdx=-1, curResults=[];
+sInput.addEventListener("input", ()=>{
+  const q=sInput.value.trim().toLowerCase();
+  if(!q){ closeResults(); return; }
+  curResults = ALL_TEAMS.filter(t=>t.name.toLowerCase().includes(q)).slice(0,12);
+  activeIdx=-1;
+  if(!curResults.length){ sRes.innerHTML=`<div class="empty">No team matches “${esc(sInput.value)}”.</div>`; sRes.classList.add("open"); return; }
+  sRes.innerHTML = curResults.map((t,i)=>`<button data-pick="${esc(t.pool+'|'+t.name)}" data-i="${i}"><span class="rt">${esc(t.name)}</span><span class="rp">${esc(t.pool)} · ${esc(t.comp)}</span></button>`).join("");
+  sRes.classList.add("open");
+});
+sRes.addEventListener("click", e=>{ const b=e.target.closest("button[data-pick]"); if(b) selectTeam(b.getAttribute("data-pick")); });
+sInput.addEventListener("keydown", e=>{
+  if(!sRes.classList.contains("open")) return;
+  const btns=[...sRes.querySelectorAll("button")];
+  if(e.key==="ArrowDown"){ e.preventDefault(); activeIdx=Math.min(activeIdx+1,btns.length-1); }
+  else if(e.key==="ArrowUp"){ e.preventDefault(); activeIdx=Math.max(activeIdx-1,0); }
+  else if(e.key==="Enter"){ e.preventDefault(); const pick=btns[activeIdx<0?0:activeIdx]; if(pick) selectTeam(pick.getAttribute("data-pick")); return; }
+  else return;
+  btns.forEach((b,i)=>b.classList.toggle("active",i===activeIdx));
+});
+function closeResults(){ sRes.classList.remove("open"); sRes.innerHTML=""; }
+document.addEventListener("click", e=>{ if(!e.target.closest(".search")) closeResults(); });
+
+render();
+</script>
+</body>
+</html>
