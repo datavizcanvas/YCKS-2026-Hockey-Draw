@@ -166,12 +166,9 @@ h1{ font-family:var(--disp); font-weight:700; font-size:30px; line-height:1.02;
   color:#fff; background:var(--pitch2); border-radius:999px; padding:2px 9px; margin-left:auto; }
 .day .empty{ background:var(--card); border-radius:14px; box-shadow:var(--shadow);
   padding:14px 16px; color:var(--mute); font-size:13.5px; }
-.day-friday .empty{ background:var(--day-fri);} .day-saturday .empty{ background:var(--day-sat);}
-.day-sunday .empty{ background:var(--day-sun);} .day-monday .empty{ background:var(--day-mon);}
+
 table.fix{ width:100%; border-collapse:separate; border-spacing:0; background:var(--card);
   border-radius:14px; box-shadow:var(--shadow); overflow:hidden; }
-.day-friday table.fix{ background:var(--day-fri);} .day-saturday table.fix{ background:var(--day-sat);}
-.day-sunday table.fix{ background:var(--day-sun);} .day-monday table.fix{ background:var(--day-mon);}
 .fix thead th{ font-family:var(--disp); text-transform:uppercase; letter-spacing:.08em;
   font-size:11px; font-weight:600; color:var(--mute); text-align:left; padding:10px 12px;
   border-bottom:1px solid var(--line); background:#f6f9f6; }
@@ -237,8 +234,7 @@ table.matrix{ border-collapse:separate; border-spacing:0; font-size:11px; }
 /* ---------- "your weekend" timeline (per-day sections) ---------- */
 .day-finals .dsw.dsw-finals{ background:var(--amber); }
 .tl-section{ background:var(--card); border-radius:14px; box-shadow:var(--shadow); padding:4px 14px; overflow:hidden; }
-.day-friday .tl-section{ background:var(--day-fri);} .day-saturday .tl-section{ background:var(--day-sat);}
-.day-sunday .tl-section{ background:var(--day-sun);} .day-monday .tl-section{ background:var(--day-mon);}
+
 .tl-item{ display:grid; grid-template-columns:66px 24px 1fr; align-items:stretch; }
 .tl-time{ text-align:right; padding:13px 10px 0 0; }
 .tl-time .t24{ display:block; font-variant-numeric:tabular-nums; font-weight:700; font-size:16px; color:var(--ink); line-height:1; }
@@ -289,10 +285,7 @@ footer a{ color:var(--pitch2); }
   .fix thead{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
   .fix tbody tr{ display:block; background:var(--card); border-radius:13px; box-shadow:var(--shadow);
     margin-bottom:10px; padding:6px 4px; }
-  .day-friday .fix tbody tr{ background:var(--day-fri); }
-  .day-saturday .fix tbody tr{ background:var(--day-sat); }
-  .day-sunday .fix tbody tr{ background:var(--day-sun); }
-  .day-monday .fix tbody tr{ background:var(--day-mon); }
+
   .fix tbody td{ display:flex; justify-content:space-between; align-items:center; gap:14px;
     border-bottom:1px solid var(--line2); padding:9px 14px; }
   .fix tbody tr td:last-child{ border-bottom:0; }
@@ -612,30 +605,43 @@ function renderWheel(t, games){
   if(!N) return `<div class="matrix-empty">No scheduled games for this team.</div>`;
   const DAYFILL={Friday:"#e9eaef",Saturday:"#e3edf4",Sunday:"#f6ece0",Monday:"#e3efe7"};
   const DAYSTROKE={Friday:"#aab0c4",Saturday:"#86abc9",Sunday:"#d4ab7d",Monday:"#8dbb9f"};
-  const W=620, H=N>5?520:440, cx=310, cy=H/2, R=(N>6?168:N>5?150:132);
-  const chipW=150, chipH=44;
+  const chipH=48, PAD=42;
+  // per-chip width sized to its text (so chips hug their content)
+  const widths = opp.map(o=>{
+    const nameW=o.name.length*7.3;
+    const metaW=(DAYSHORT[o.day].length+o.time.length+6)*6.4;
+    return Math.max(118, Math.round(Math.max(nameW,metaW))+PAD);
+  });
+  const maxW=Math.max(...widths);
+  const hubW=Math.max(132, t.name.length*8.2+30), hubH=52;
+  // radius that guarantees (a) no chip-chip overlap and (b) no chip-hub overlap
+  const sinHalf=Math.sin(Math.PI/N);
+  const Rpack=Math.max(maxW, chipH+10)/(2*sinHalf) + 12;
+  const Rhub=hubW/2 + maxW/2 + 26;
+  const R=Math.max(Rpack, Rhub, 150);
+  const margin=20;
+  const W=Math.ceil(2*(R+maxW/2+margin)), H=Math.ceil(2*(R+chipH/2+margin));
+  const cx=W/2, cy=H/2;
   let spokes="", chips="";
   opp.forEach((o,i)=>{
-    const a=(-90 + i*360/N)*Math.PI/180;
-    const px=cx+R*Math.cos(a), py=cy+R*Math.sin(a);
-    spokes+=`<line x1="${cx}" y1="${cy}" x2="${px.toFixed(1)}" y2="${py.toFixed(1)}" stroke="#c9d4cd" stroke-width="2"/>`;
-    const x=(px-chipW/2).toFixed(1), y=(py-chipH/2).toFixed(1);
-    const fm=FIELD_META[o.field]||{};
+    const ang=(-90 + i*360/N)*Math.PI/180;
+    const px=cx+R*Math.cos(ang), py=cy+R*Math.sin(ang);
+    const w=widths[i], fm=FIELD_META[o.field]||{};
+    spokes+=`<line x1="${cx}" y1="${cy.toFixed(1)}" x2="${px.toFixed(1)}" y2="${py.toFixed(1)}" stroke="#c4cfc8" stroke-width="2"/>`;
+    const x=(px-w/2).toFixed(1), y=(py-chipH/2).toFixed(1);
     chips+=`<g>`+
-      `<rect x="${x}" y="${y}" width="${chipW}" height="${chipH}" rx="11" fill="${DAYFILL[o.day]}" stroke="${DAYSTROKE[o.day]}" stroke-width="1.5"/>`+
-      `<circle cx="${(px-chipW/2+13).toFixed(1)}" cy="${py.toFixed(1)}" r="4.5" fill="${fm.hex||'#888'}"/>`+
-      `<text x="${px.toFixed(1)}" y="${(py-4).toFixed(1)}" text-anchor="middle" class="wn">${esc(o.name)}</text>`+
-      `<text x="${px.toFixed(1)}" y="${(py+11).toFixed(1)}" text-anchor="middle" class="wm">${DAYSHORT[o.day]} ${esc(o.time)}</text>`+
+      `<rect x="${x}" y="${y}" width="${w}" height="${chipH}" rx="13" fill="${DAYFILL[o.day]}" stroke="${DAYSTROKE[o.day]}" stroke-width="1.5"/>`+
+      `<text x="${px.toFixed(1)}" y="${(py-3).toFixed(1)}" text-anchor="middle" class="wn">${esc(o.name)}</text>`+
+      `<text x="${px.toFixed(1)}" y="${(py+14).toFixed(1)}" text-anchor="middle" class="wm">${DAYSHORT[o.day]} ${esc(o.time)} · ${esc(fm.cls?fm.cls.toUpperCase():o.field)}</text>`+
     `</g>`;
   });
-  const pw=Math.max(120, t.name.length*9+30);
-  const hub=`<rect x="${(cx-pw/2).toFixed(1)}" y="${(cy-24)}" width="${pw}" height="48" rx="24" class="hub"/>`+
-    `<text x="${cx}" y="${cy-2}" text-anchor="middle" class="hubt">${esc(t.name)}</text>`+
-    `<text x="${cx}" y="${cy+13}" text-anchor="middle" class="hubs">${esc(t.pool)}</text>`;
-  const days=[...new Set(opp.map(o=>o.day))];
+  const hub=`<rect x="${(cx-hubW/2).toFixed(1)}" y="${(cy-hubH/2).toFixed(1)}" width="${hubW.toFixed(1)}" height="${hubH}" rx="${hubH/2}" class="hub"/>`+
+    `<text x="${cx}" y="${(cy-4).toFixed(1)}" text-anchor="middle" class="hubt">${esc(t.name)}</text>`+
+    `<text x="${cx}" y="${(cy+13).toFixed(1)}" text-anchor="middle" class="hubs">${esc(t.pool)}</text>`;
+  const days=[...new Set(opp.map(o=>o.day))].sort((a,b)=>DAYS.indexOf(a)-DAYS.indexOf(b));
   const legend=`<div class="wheel-legend">`+days.map(d=>`<span><i style="background:${DAYSTROKE[d]}"></i>${d}</span>`).join("")+`</div>`;
-  return `<div class="wheelwrap"><svg viewBox="0 0 ${W} ${H}" class="wheel" role="img" aria-label="Opponents of ${esc(t.name)} coloured by day">`+
-    spokes+hub+chips+`</svg>${legend}<p class="matrix-foot">Each opponent is coloured by the day you meet them; the dot shows the field. Times and breaks are in the schedule above.</p></div>`;
+  return `<div class="wheelwrap"><svg viewBox="0 0 ${W} ${H}" class="wheel" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Opponents of ${esc(t.name)} coloured by day">`+
+    spokes+hub+chips+`</svg>${legend}<p class="matrix-foot">Each opponent is coloured by the day you meet them, with the time and field shown. Full times and breaks are in the schedule above.</p></div>`;
 }
 
 function renderHalfTable(pool, t){
